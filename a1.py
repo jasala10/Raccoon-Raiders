@@ -152,21 +152,7 @@ class GameBoard:
         >>> b.at(1, 1)[0] == r  # requires GameBoard.at be implemented to work
         True
         """
-        # self._board[(c.x, c.y)] = [c]
-        # c is a character
-        # c.board is a GameBoard
-        # c.board._board is a Dictionary of form {(0,0): [P], (0,1): []}
-        # NOTE: c.board is the same as self!!!
-
         self._characters.append(c)
-
-        # ↓ I think that since c is typed 'Character' it cannot be a subclass
-        # ↑ Nope that's so stupid nvm
-
-        # So, I want to add a player when things start. Since this method
-        # is only called when a character is being initialized, it will
-        # never be called during the game.
-
         if type(c) == Player:
             self._player = c
 
@@ -196,9 +182,6 @@ class GameBoard:
             if char.x == x and char.y == y:
                 result.append(char)
         return result
-
-        # UPDATE Feb 20:
-        # seems good!
 
     def to_grid(self) -> List[List[chr]]:
         """
