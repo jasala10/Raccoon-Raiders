@@ -27,6 +27,7 @@ from typing import Dict, List, Optional
 import pygame
 import a1
 
+chr = str
 # Feel free to modify any of these constant values.
 
 # Game Screen dimensions in pixels
@@ -54,14 +55,14 @@ FRACTION_LOCKED = 0.1
 FRACTION_SMART = 0.5
 
 # Character icons
-BACKGROUND_ICON = 'icons/background.png'
-GARBAGE_CAN_OPEN_ICON = 'icons/open.png'
-GARBAGE_CAN_CLOSED_ICON = 'icons/closed.png'
-PERSON_ICON = 'icons/person.png'
-SMART_RACCOON_ICON = 'icons/smart.png'
-RACCOON_ICON = 'icons/raccoon.png'
-RECYCLING_ICON = 'icons/recycling.png'
-RACCOON_IN_BIN_ICON = 'icons/raccoon_in_bin.png'
+BACKGROUND_ICON = "icons/background.png"
+GARBAGE_CAN_OPEN_ICON = "icons/open.png"
+GARBAGE_CAN_CLOSED_ICON = "icons/closed.png"
+PERSON_ICON = "icons/person.png"
+SMART_RACCOON_ICON = "icons/smart.png"
+RACCOON_ICON = "icons/raccoon.png"
+RECYCLING_ICON = "icons/recycling.png"
+RACCOON_IN_BIN_ICON = "icons/raccoon_in_bin.png"
 
 
 def make_image(icon_file: str, width: int, height: int) -> pygame.surface:
@@ -84,6 +85,7 @@ class RaccoonRaiders:
     square_size:
         size of each square in the game
     """
+
     # === Private Attributes ===
     # _board:
     #     the board containing the state of the game
@@ -117,18 +119,16 @@ class RaccoonRaiders:
         if board_string:
             self._board.setup_from_grid(board_string)
         else:
-            populate_board(self._board,
-                           NUM_RACCOONS,
-                           NUM_GARBAGE_CANS,
-                           NUM_RECYCLING_BINS)
+            populate_board(
+                self._board, NUM_RACCOONS, NUM_GARBAGE_CANS, NUM_RECYCLING_BINS
+            )
 
-        self.square_size = min(int(SCREEN_WIDTH / w),
-                               int(SCREEN_HEIGHT / h))
+        self.square_size = min(int(SCREEN_WIDTH / w), int(SCREEN_HEIGHT / h))
 
         # Initialize a window of these pixel dimensions for display
-        self._screen = pygame.display.set_mode((w * self.square_size,
-                                                h * self.square_size)
-                                               )
+        self._screen = pygame.display.set_mode(
+            (w * self.square_size, h * self.square_size)
+        )
 
         # a function defined for convenience that we use to set up the
         # _icon_map below.
@@ -138,14 +138,15 @@ class RaccoonRaiders:
         # Initialize the background tile
         self._background_tile = image_loader(BACKGROUND_ICON)
 
-        self._icon_map = {'R': image_loader(RACCOON_ICON),
-                          'S': image_loader(SMART_RACCOON_ICON),
-                          'C': image_loader(GARBAGE_CAN_CLOSED_ICON),
-                          'O': image_loader(GARBAGE_CAN_OPEN_ICON),
-                          '@': image_loader(RACCOON_IN_BIN_ICON),
-                          'B': image_loader(RECYCLING_ICON),
-                          'P': image_loader(PERSON_ICON)
-                          }
+        self._icon_map = {
+            "R": image_loader(RACCOON_ICON),
+            "S": image_loader(SMART_RACCOON_ICON),
+            "C": image_loader(GARBAGE_CAN_CLOSED_ICON),
+            "O": image_loader(GARBAGE_CAN_OPEN_ICON),
+            "@": image_loader(RACCOON_IN_BIN_ICON),
+            "B": image_loader(RECYCLING_ICON),
+            "P": image_loader(PERSON_ICON),
+        }
 
         self._last_state = None
         self.height, self.width = self._board.height, self._board.width
@@ -158,18 +159,22 @@ class RaccoonRaiders:
         state = self._board.to_grid()
         changed = self._last_state != state
         if changed:  # also print the board to the console, feel free to remove
-            print(f'\n{self._board}')
+            print(f"\n{self._board}")
         self._last_state = state
 
         for x in range(len(state[0])):  # will fail until Task #1 is done
             for y in range(len(state)):
                 c = state[y][x]
-                rectangle = pygame.Rect(x * self.square_size,
-                                        y * self.square_size,
-                                        self.square_size, self.square_size)
+                rectangle = pygame.Rect(
+                    x * self.square_size,
+                    y * self.square_size,
+                    self.square_size,
+                    self.square_size,
+                )
                 # Draw the icon onto the rectangle.
-                self._screen.blit(self._background_tile, (x * self.square_size,
-                                                          y * self.square_size))
+                self._screen.blit(
+                    self._background_tile, (x * self.square_size, y * self.square_size)
+                )
                 if c in self._icon_map:
                     self._screen.blit(self._icon_map[c], rectangle)
 
@@ -193,11 +198,8 @@ class RaccoonRaiders:
         pygame.font.init()
         font = pygame.font.Font(pygame.font.get_default_font(), 36)
         # now print the text
-        text_surface = font.render(f"Your Score: {score}",
-                                   False, (0, 0, 0))
-        self._screen.blit(text_surface, dest=(0,
-                                              (self.square_size
-                                               * self.height) // 2))
+        text_surface = font.render(f"Your Score: {score}", False, (0, 0, 0))
+        self._screen.blit(text_surface, dest=(0, (self.square_size * self.height) // 2))
         pygame.display.flip()
         # Keep the screen on after the game has ended. You need to
         # close the pygame window to end the program.
@@ -236,8 +238,9 @@ class RaccoonRaiders:
 # this depends on your place_character method in the GameBoard class
 # in order to work, since
 # Character.__init__ relies on GameBoard.place_character!
-def populate_board(board: a1.GameBoard, num_raccoons: int,
-                   num_cans: int, num_bins: int) -> None:
+def populate_board(
+    board: a1.GameBoard, num_raccoons: int, num_cans: int, num_bins: int
+) -> None:
     """Place characters on this board.
 
     The board will have one player at the top-left corner of the board,
@@ -290,16 +293,14 @@ def populate_board(board: a1.GameBoard, num_raccoons: int,
         a1.RecyclingBin(board, x, y)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     random_game = False  # set to True to play on a random board
     if random_game:
-        rc = RaccoonRaiders(BOARD_WIDTH,
-                            BOARD_HEIGHT)
+        rc = RaccoonRaiders(BOARD_WIDTH, BOARD_HEIGHT)
         # for random board, you can adjust settings at top of this file
     else:
         # game board from handout animation
-        game_string = "P-O----S\n---BBB-\n------B-\n-BRBB-O-\n" \
-                      "---B-B--\n--O---S-"
+        game_string = "P-O----S\n---BBB-\n------B-\n-BRBB-O-\n" "---B-B--\n--O---S-"
         rc = RaccoonRaiders(8, 6, game_string)
 
         # uncomment the below for bin moving demo in handout

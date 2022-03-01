@@ -24,6 +24,14 @@ from random import shuffle
 from typing import List, Tuple, Optional
 from typing import Dict  # my custom imports
 
+# For some reason, they're doing something really weird with types in this
+# assignment. `chr` in python is actually a function, python doesn't have a
+# character type defined. Here I'm using a typealias to fix errors in my editor,
+# but for the actual submission this will probably mess up their tests. For some
+# reason, `chr` being a function doesn't cause any issues in PyCharm.
+# UPDATE: see https://piazza.com/class/ky50y49v8002n5?cid=1134
+chr = str
+
 # Each raccoon moves every this many turns
 RACCOON_TURN_FREQUENCY = 20
 
@@ -90,6 +98,7 @@ class GameBoard:
     === Sample Usage ===
     See examples in individual method docstrings.
     """
+
     # === Private Attributes ===
     # _player:
     #   the player of the game
@@ -153,7 +162,8 @@ class GameBoard:
         True
         """
         self._characters.append(c)
-        if type(c) == Player:
+
+        if isinstance(c, Player):
             self._player = c
 
     def at(self, x: int, y: int) -> List[Character]:
@@ -205,21 +215,15 @@ class GameBoard:
         >>> b.to_grid()
         [['P', '-', '-'], ['-', 'R', 'C']]
         """
-        result = []
-        for i in range(self.height):
-            result.append([])
-        # now result has appropriate list structure
+        row = ["-" for _ in range(self.width)]
+        grid = [row.copy() for _ in range(self.height)]
 
-        for item in result:
-            for i in range(self.width):
-                item.append('-')
-        # lists are formatted and everything is blank
+        for c in self._characters:
+            # TODO: What happens here if a recycling bin is after a binned
+            # raccoon in `self._characters`? LK
+            grid[c.y][c.x] = c.get_char()
 
-        for char in self._characters:
-            letter = char.get_char()
-            result[char.y][char.x] = letter
-
-        return result
+        return grid
 
     def __str__(self) -> str:
         """
@@ -240,16 +244,13 @@ class GameBoard:
         >>> str(b)
         'P--\\n-RO'
         """
-        result = ''
+        result = ""
         grid = self.to_grid()
 
-        for i in range(len(grid)-1):
-            for item in grid[i]:
-                result += item
-            result += '\n'
-
-        for item in grid[-1]:
-            result += item
+        for y, row in enumerate(grid):
+            result += "".join(row)
+            if y is not self.height:
+                result += "\n"
 
         return result
 
@@ -277,30 +278,27 @@ class GameBoard:
         width = len(lines[0])
         height = len(lines)
         self.__init__(width, height)  # reset the board to an empty board
-        y = 0
-        for line in lines:
-            x = 0
-            for char in line:
-                if char == 'R':
+
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                if char == "R":
                     Raccoon(self, x, y)
-                elif char == 'S':
+                elif char == "S":
                     SmartRaccoon(self, x, y)
-                elif char == 'P':
-                    Player(self, x, y)
-                elif char == 'O':
+                elif char == "P":
+                    self._player = Player(self, x, y)
+                elif char == "O":
                     GarbageCan(self, x, y, False)
-                elif char == 'C':
+                elif char == "C":
                     GarbageCan(self, x, y, True)
-                elif char == 'B':
+                elif char == "B":
                     RecyclingBin(self, x, y)
-                elif char == '@':
+                elif char == "@":
                     GarbageCan(self, x, y, False)
                     Raccoon(self, x, y)  # always makes it a Raccoon
                     # Note: the order mattered above, as we have to place the
                     # Raccoon BEFORE the GarbageCan (see the place_character
                     # method precondition)
-                x += 1
-            y += 1
 
     # a helper method you may find useful in places
     def on_board(self, x: int, y: int) -> bool:
@@ -447,6 +445,7 @@ class Character:
     === Representation Invariants ===
     x, y are valid coordinates in board (i.e. board.on_board(x, y) is True)
     """
+
     board: GameBoard
     x: int
     y: int
@@ -462,6 +461,13 @@ class Character:
         self.board = b
         self.x, self.y = x, y
         self.board.place_character(self)  # this associates self with the board!
+
+    def _move_to(self, position: Tuple[int, int]):
+        """
+        Moves this character to the given position
+        """
+        self.x = position[0]
+        self.y = position[1]
 
     def move(self, direction: Tuple[int, int]) -> bool:
         """
@@ -532,32 +538,31 @@ class RecyclingBin(Character):
         True
         """
 
-        new_tile = (self.x + direction[0], self.y + direction[1])
-        tile_item = (self.board.at(new_tile[0], new_tile[1]))
+        new_spot = (self.x + direction[0], self.y + direction[1])
+        tile_items = self.board.at(new_spot[0], new_spot[1])
 
-        if new_tile[0] < 0 or new_tile[0] > self.board.width - 1:
+        if not self.board.on_board(new_spot[0], new_spot[1]):
             return False
 
-        if new_tile[1] < 0 or new_tile[1] > self.board.height - 1:
-            return False
-
-        # ↓ if tile_item == []
-        if not tile_item:
-            self.x = new_tile[0]
-            self.y = new_tile[1]
+        if len(tile_items) == 0:
+            self._move_to(new_spot)
             return True
 
-        elif tile_item == 'B':
-            tile_item.move(new_tile[0], new_tile[1])
+        item = tile_items[0]
 
-        else:
-            return False
+        if isinstance(item, RecyclingBin):
+            bin_moved = item.move(direction)
+            if bin_moved:
+                self._move_to(new_spot)
+                return True
+
+        return False
 
     def get_char(self) -> chr:
         """
         Return the character 'B' representing a RecyclingBin.
         """
-        return 'B'
+        return "B"
 
 
 class Player(TurnTaker):
@@ -576,6 +581,7 @@ class Player(TurnTaker):
     >>> g.locked
     True
     """
+
     # === Private Attributes ===
     # _last_event:
     #   The direction corresponding to the last keypress event that the user
@@ -644,54 +650,38 @@ class Player(TurnTaker):
         True
         """
         new_spot = (self.x + direction[0], self.y + direction[1])
-        grid = self.board.to_grid()
+        items = self.board.at(new_spot[0], new_spot[1])
 
-        # check y value:
-        if (new_spot[1] > self.board.height - 1) or (new_spot[1] < 0):
+        if not self.board.on_board(new_spot[0], new_spot[1]):
             return False
 
-        # check x value:
-        elif (new_spot[0] > self.board.width - 1) or (new_spot[0] < 0):
-            return False
+        # Empty tile
+        if len(items) == 0:
+            self._move_to(new_spot)
+            return True
 
-        # Raccoon (won't budge)
-        elif grid[new_spot[1]][new_spot[0]] == 'R':
-            return False
-
-        # Smart Raccoon (won't budge)
-        elif grid[new_spot[1]][new_spot[0]] == 'S':
-            return False
-
-        # Locked GarbageCan (won't budge)
-        elif grid[new_spot[1]][new_spot[0]] == 'C':
-            return False
+        item = items[0]
 
         # Recycling bin (WILL move)
-        elif grid[new_spot[1]][new_spot[0]] == 'B':
-            # (the recycling bin at position new_spot).move(direction)
-            self.board.at(new_spot[0], new_spot[1])[0].move(direction)
-            self.x = new_spot[0]
-            self.y = new_spot[1]
-
+        if isinstance(item, RecyclingBin):
+            bin_moved = item.move(direction)
+            if bin_moved:
+                self._move_to(new_spot)
             return True
 
-        # Blank space (WILL move)
-        elif grid[new_spot[1]][new_spot[0]] == '-':
-            self.x = new_spot[0]
-            self.y = new_spot[1]
+        # Garbage can
+        elif isinstance(item, GarbageCan):
+            item.locked = True
             return True
 
-        # empty unlocked garbage can
-        elif grid[new_spot[1]][new_spot[0]] == 'O':
-            self.board.at(new_spot[0], new_spot[1])[0].locked = True
-            #  do not update player position!
-            return True
+        # All other entities block movement
+        return False
 
     def get_char(self) -> chr:
         """
         Return the character 'P' representing this Player.
         """
-        return 'P'
+        return "P"
 
 
 class Raccoon(TurnTaker):
@@ -712,6 +702,7 @@ class Raccoon(TurnTaker):
     >>> r.inside_can
     False
     """
+
     inside_can: bool
 
     def __init__(self, b: GameBoard, x: int, y: int) -> None:
@@ -824,8 +815,8 @@ class Raccoon(TurnTaker):
         or 'R' otherwise.
         """
         if self.inside_can:
-            return '@'
-        return 'R'
+            return "@"
+        return "R"
 
 
 class SmartRaccoon(Raccoon):
@@ -884,8 +875,8 @@ class SmartRaccoon(Raccoon):
         and 'S' otherwise.
         """
         if self.inside_can:
-            return '@'
-        return 'S'
+            return "@"
+        return "S"
 
 
 class GarbageCan(Character):
@@ -903,6 +894,7 @@ class GarbageCan(Character):
     >>> g.locked
     False
     """
+
     locked: bool
 
     def __init__(self, b: GameBoard, x: int, y: int, locked: bool) -> None:
@@ -919,8 +911,8 @@ class GarbageCan(Character):
         an open garbage can.
         """
         if self.locked:
-            return 'C'
-        return 'O'
+            return "C"
+        return "O"
 
     def move(self, direction: Tuple[int, int]) -> bool:
         """
@@ -947,16 +939,26 @@ def get_neighbours(tile: Tuple[int, int]) -> List[Tuple[int, int]]:
     return rslt
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
 
     import python_ta
-    python_ta.check_all(config={
-        'allowed-io': [],
-        'allowed-import-modules': ['doctest', 'python_ta', 'typing',
-                                   'random', '__future__', 'math'],
-        'disable': ['E1136'],
-        'max-attributes': 15,
-        'max-module-lines': 1600
-    })
+
+    python_ta.check_all(
+        config={
+            "allowed-io": [],
+            "allowed-import-modules": [
+                "doctest",
+                "python_ta",
+                "typing",
+                "random",
+                "__future__",
+                "math",
+            ],
+            "disable": ["E1136"],
+            "max-attributes": 15,
+            "max-module-lines": 1600,
+        }
+    )
