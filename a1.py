@@ -249,7 +249,7 @@ class GameBoard:
 
         for y, row in enumerate(grid):
             result += "".join(row)
-            if y is not self.height:
+            if y is not self.height - 1:
                 result += "\n"
 
         return result
@@ -341,8 +341,9 @@ class GameBoard:
         >>> (p.x, p.y) == (1, 0)  # Player moved right!
         True
         """
-        self._player.take_turn()
-        self.turns += 1  # PROVIDED, DO NOT CHANGE
+        if self._player is not None:
+            self._player.take_turn()
+            self.turns += 1  # PROVIDED, DO NOT CHANGE
 
         if self.turns % RACCOON_TURN_FREQUENCY == 0:  # PROVIDED, DO NOT CHANGE
             pass  # TODO Task #4 replace pass with code here to make each
@@ -356,7 +357,8 @@ class GameBoard:
         The board's Player records the event that happened, so that when the
         Player gets a turn, it can make the move that the user input indicated.
         """
-        self._player.record_event(event)
+        if self._player is not None:
+            self._player.record_event(event)
 
     def check_game_end(self) -> Optional[int]:
         """Check if this game has ended. A game ends when all the raccoons on
@@ -422,7 +424,35 @@ class GameBoard:
         >>> b.adjacent_bin_score()
         5
         """
-        # TODO Task #5
+        high_score = 1
+
+        def adjacents(bin: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
+            score = 1
+
+            for d in DIRECTIONS:
+                items = self.at(bin.x + d[0], bin.y + d[1])
+
+                if len(items) < 1:
+                    continue
+
+                item = items[0]
+
+                if isinstance(item, RecyclingBin) and item not in ignoring:
+                    ignoring.append(bin)
+                    score += adjacents(item, ignoring)
+
+            return score
+
+        for c in self._characters:
+            if not isinstance(c, RecyclingBin):
+                continue
+
+            score = adjacents(c, [c])
+
+            if score > high_score:
+                high_score = score
+
+        return high_score
 
 
 class Character:
