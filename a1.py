@@ -1014,7 +1014,7 @@ class SmartRaccoon(Raccoon):
         # Sort to find the best direction choice. Because of the order in which
         # we added the choices, two choices with equal displacements will result
         # in the earliest added being first. This should ensure that the
-        # priotization they ask for, in terms of `DIRECTIONS`, is maintained.
+        # prioritization they ask for, in terms of `DIRECTIONS`, is maintained.
         choices.sort(key=lambda i: i[0])
 
         direction = choices[0][1]
