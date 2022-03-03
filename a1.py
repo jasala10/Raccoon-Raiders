@@ -768,7 +768,44 @@ class Raccoon(TurnTaker):
         >>> r.check_trapped()
         True
         """
-        # TODO Task #3
+        characters = ['B', 'R', '@', 'P']
+
+        # check left
+        i = None
+        if not self.x == 0:
+            left = self.board.at(self.x-1, self.y)
+            if len(left) > 0:
+                i = left[0].get_char()
+        is_left_trapped = self.x == 0 or i in characters
+
+        # check right:
+        r_border_trapped = self.x == self.board.width-1
+        j = None
+        if not r_border_trapped:
+            right = self.board.at(self.x+1, self.y)
+            if len(right) > 0:
+                j = right[0].get_char
+        is_right_trapped = r_border_trapped or j in characters
+
+        # check up
+        k = None
+        if not self.y == 0:
+            up = self.board.at(self.x, self.y -1)
+            if len(up) > 0:
+                k = up[0].get_char()
+        is_up_trapped = self.y == 0 or k in characters
+
+        # check down
+        d_border_trapped = (self.y == self.board.height - 1)
+        m = None
+        if not d_border_trapped:
+            down = self.board.at(self.x, self.y + 1)
+            if len(down) > 0:
+                m = down[0].get_char()
+        is_down_trapped = d_border_trapped or m in characters
+
+        return is_left_trapped and is_right_trapped and is_up_trapped \
+            and is_down_trapped
 
     def move(self, direction: Tuple[int, int]) -> bool:
         """Attempt to move this Raccoon in <direction> and return whether
