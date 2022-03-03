@@ -22,7 +22,7 @@ from __future__ import annotations
 
 from random import shuffle
 from typing import List, Tuple, Optional
-from typing import Dict  # my custom imports
+from typing import Dict, Iterable, Any  # my custom imports
 
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
@@ -72,6 +72,10 @@ def get_shuffled_directions() -> List[Tuple[int, int]]:
     to_return = DIRECTIONS[:]
     shuffle(to_return)
     return to_return
+
+
+def shift(old: Tuple[int, int], by: Tuple[int, int]) -> Tuple[int, int]:
+    return (old[0] + by[0], old[1] + by[1])
 
 
 class GameBoard:
@@ -192,6 +196,13 @@ class GameBoard:
             if char.x == x and char.y == y:
                 result.append(char)
         return result
+
+    def contains_at(self, pos: Tuple[int, int], query: Iterable[Any]) -> bool:
+        characters = self.at(pos[0], pos[1])
+
+        chars = [c.get_char() for c in characters]
+
+        return not set(chars).isdisjoint(query)
 
     def to_grid(self) -> List[List[chr]]:
         """
@@ -866,7 +877,30 @@ class Raccoon(TurnTaker):
         >>> len(b.at(1, 1)) == 2  # Raccoon and GarbageCan are both at (1, 1)!
         True
         """
-        # TODO Task #4
+        blockers = ["P", "@", "R", "B"]
+
+        pos = shift((self.x, self.y), direction)
+        (x, y) = pos
+
+        if self.inside_can or not self.board.on_board(x, y):
+            return False
+
+        if self.board.contains_at(pos, blockers):
+            return False
+
+        if self.board.contains_at(pos, "C"):
+            locked_bin = self.board.at(x, y)[0]
+
+            if isinstance(locked_bin, GarbageCan):
+                locked_bin.locked = False
+                return True
+
+        if self.board.contains_at(pos, "O"):
+            self.inside_can = True
+
+        (self.x, self.y) = pos
+
+        return True
 
     def take_turn(self) -> None:
         """Take a turn in the game.
@@ -889,7 +923,13 @@ class Raccoon(TurnTaker):
         >>> r2.x, r2.y
         (2, 1)
         """
-        # TODO Task #4
+        if self.inside_can:
+            return
+
+        d = DIRECTIONS.copy()
+        shuffle(d)
+
+        self.move(d[0])
 
     def get_char(self) -> chr:
         """
@@ -911,7 +951,7 @@ class SmartRaccoon(Raccoon):
     SmartRaccoons move in the same way as Raccoons.
 
     === Sample Usage ===
-    >>> b = GameBoard(8, 2)
+    >>> b = GameBoard(8, 2) # https://piazza.com/class/ky50y49v8002n5?cid=1008
     >>> s = SmartRaccoon(b, 4, 0)
     >>> s.x, s.y
     (4, 0)
@@ -937,7 +977,7 @@ class SmartRaccoon(Raccoon):
         GarbageCans between this SmartRaccoon and the GarbageCan. The Player
         may be between this SmartRaccoon and the GarbageCan though.
 
-        >>> b = GameBoard(8, 1)
+        >>> b = GameBoard(8, 2)
         >>> s = SmartRaccoon(b, 4, 0)
         >>> _ = GarbageCan(b, 3, 1, False)
         >>> _ = GarbageCan(b, 0, 0, False)
@@ -949,7 +989,36 @@ class SmartRaccoon(Raccoon):
         >>> s.x == 6
         True
         """
-        # TODO Task #4
+        blockers = ["B", "@", "R", "C"]
+        choices = []
+
+        for d in DIRECTIONS:
+            p = shift((self.x, self.y), d)
+
+            while self.board.on_board(p[0], p[1]):
+                if self.board.contains_at(p, blockers):
+                    break
+
+                if self.board.contains_at(p, "O"):
+                    # This works because we know that one of either the
+                    # horizontal or vertical differences in position is 0.
+                    displacement = abs((p[0] - self.x) + (p[1] - self.y))
+                    choices.append((displacement, d))
+                    break
+
+                p = shift(p, d)
+
+        if len(choices) < 1:
+            return
+
+        # Sort to find the best direction choice. Because of the order in which
+        # we added the choices, two choices with equal displacements will result
+        # in the earliest added being first. This should ensure that the
+        # priotization they ask for, in terms of `DIRECTIONS`, is maintained.
+        choices.sort(key=lambda i: i[0])
+
+        direction = choices[0][1]
+        self.move(direction)
 
     def get_char(self) -> chr:
         """
@@ -1025,8 +1094,10 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testmod()
+    # For running a doctest on a single method
+    # doctest.run_docstring_examples(SmartRaccoon.take_turn, globals())
 
-    import python_ta
+    import python_ta # type: ignore
 
     python_ta.check_all(
         config={
