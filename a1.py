@@ -386,7 +386,22 @@ class GameBoard:
         >>> b.ended
         True
         """
-        # TODO Task #3 (you can leave calculating the score until Task #5)
+        trapped_raccoons = 0
+
+        for c in self._characters:
+            if not isinstance(c, Raccoon):
+                continue
+
+            trapped = c.check_trapped()
+
+            if trapped:
+                trapped_raccoons += 1
+            elif not (trapped or c.inside_can):
+                self.ended = False
+                return None
+
+        self.ended = True
+        return (trapped_raccoons * 10) + self.adjacent_bin_score()
 
     def adjacent_bin_score(self) -> int:
         """
