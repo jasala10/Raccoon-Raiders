@@ -178,6 +178,57 @@ def test_simple_give_turns() -> None:
     assert (r.x, r.y) != (1, 1)  # Raccoon has had a turn!
     assert (p.x, p.y) == (1, 0)  # Player moved right!
 
+# ====== CUSTOM TESTS =========
+
+
+def test_check_trapped_00() -> None:
+    b = GameBoard(1, 1)
+    r = Raccoon(b, 0, 0)
+    assert r.check_trapped()
+
+
+def test_check_trapped_01() -> None:
+    b = GameBoard(2, 2)
+    r = Raccoon(b, 0, 1)
+    assert not r.check_trapped()
+
+
+def test_check_trapped_02() -> None:
+    b = GameBoard(1, 7)
+    r = Raccoon(b, 0, 3)
+    assert not r.check_trapped()
+
+
+def test_check_trapped_03() -> None:
+    b = GameBoard(1, 7)
+    r = Raccoon(b, 0, 3)
+    _ = Player(b, 0, 4)
+    _ = Player(b, 0, 2)
+    assert r.check_trapped()
+
+
+def test_check_trapped_04() -> None:
+    b = GameBoard(9, 9)
+    r = Raccoon(b, 5, 5)
+    a = RecyclingBin(b, 4, 5)
+    b = RecyclingBin(b, 6, 5)
+    c = RecyclingBin(b, 5, 4)
+    d = RecyclingBin(b, 5, 6)
+    assert r.check_trapped() is True
+
+
+def test_check_trapped_05() -> None:
+    b = GameBoard(9, 9)
+    r = Raccoon(b, 5, 5)
+    _ = RecyclingBin(b, 4, 5)
+    _ = RecyclingBin(b, 6, 5)
+    _ = RecyclingBin(b, 5, 4)
+    _ = GarbageCan(b, 5, 6, False)
+    assert r.check_trapped()
+
+
+
+
 
 if __name__ == '__main__':
     import pytest

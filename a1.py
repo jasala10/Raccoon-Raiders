@@ -793,13 +793,21 @@ class Raccoon(TurnTaker):
         >>> _ = RecyclingBin(b, 1, 1)
         >>> r.check_trapped()
         True
+        >>> b = GameBoard(9, 9)
+        >>> r = Raccoon(b, 5, 5)
+        >>> _ = RecyclingBin(b, 4, 5)
+        >>> _ = RecyclingBin(b, 6, 5)
+        >>> _ = RecyclingBin(b, 5, 4)
+        >>> _ = RecyclingBin(b, 5, 6)
+        >>> r.check_trapped()
+        True
         """
         characters = ['B', 'R', '@', 'P']
 
         # check left
         i = None
         if not self.x == 0:
-            left = self.board.at(self.x-1, self.y)
+            left = self.board.at(self.x - 1, self.y)
             if len(left) > 0:
                 i = left[0].get_char()
         is_left_trapped = self.x == 0 or i in characters
@@ -808,7 +816,7 @@ class Raccoon(TurnTaker):
         r_border_trapped = self.x == self.board.width-1
         j = None
         if not r_border_trapped:
-            right = self.board.at(self.x+1, self.y)
+            right = self.board.at(self.x + 1, self.y)
             if len(right) > 0:
                 j = right[0].get_char
         is_right_trapped = r_border_trapped or j in characters
@@ -816,7 +824,7 @@ class Raccoon(TurnTaker):
         # check up
         k = None
         if not self.y == 0:
-            up = self.board.at(self.x, self.y -1)
+            up = self.board.at(self.x, self.y - 1)
             if len(up) > 0:
                 k = up[0].get_char()
         is_up_trapped = self.y == 0 or k in characters
