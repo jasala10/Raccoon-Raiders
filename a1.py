@@ -107,8 +107,6 @@ class GameBoard:
     # _player:
     #   the player of the game
     # _characters: all characters on the board
-    # TODO Task #1 add any other private attribute(s) you need to keep track
-    #  of the Characters on this board.
 
     ended: bool
     turns: int
@@ -357,8 +355,11 @@ class GameBoard:
             self.turns += 1  # PROVIDED, DO NOT CHANGE
 
         if self.turns % RACCOON_TURN_FREQUENCY == 0:  # PROVIDED, DO NOT CHANGE
-            pass  # TODO Task #4 replace pass with code here to make each
-            #            raccoon take a turn
+            #  bug occurs about 1/5 of the time and idk why
+            for character in self._characters:
+                if isinstance(character, Raccoon):
+                    character.take_turn()
+                    self.turns += 1
 
         self.check_game_end()  # PROVIDED, DO NOT CHANGE
 
