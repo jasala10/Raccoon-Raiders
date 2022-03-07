@@ -932,13 +932,11 @@ class Raccoon(TurnTaker):
         >>> r2.x, r2.y
         (2, 1)
         """
-        if self.inside_can:
-            return
+        choices = DIRECTIONS.copy()
+        shuffle(choices)
 
-        d = DIRECTIONS.copy()
-        shuffle(d)
-
-        self.move(d[0])
+        while len(choices) > 0 and self.move(choices.pop()) == False:
+            continue
 
     def get_char(self) -> chr:
         """
