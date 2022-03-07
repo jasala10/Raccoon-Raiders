@@ -819,7 +819,7 @@ class Raccoon(TurnTaker):
         if not r_border_trapped:
             right = self.board.at(self.x + 1, self.y)
             if len(right) > 0:
-                j = right[0].get_char
+                j = right[0].get_char()
         is_right_trapped = r_border_trapped or j in characters
 
         # check up
