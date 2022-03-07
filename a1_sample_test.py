@@ -210,10 +210,10 @@ def test_check_trapped_03() -> None:
 def test_check_trapped_04() -> None:
     b = GameBoard(9, 9)
     r = Raccoon(b, 5, 5)
-    a = RecyclingBin(b, 4, 5)
-    b = RecyclingBin(b, 6, 5)
-    c = RecyclingBin(b, 5, 4)
-    d = RecyclingBin(b, 5, 6)
+    _ = RecyclingBin(b, 4, 5)
+    _ = RecyclingBin(b, 6, 5)
+    _ = RecyclingBin(b, 5, 4)
+    _ = RecyclingBin(b, 5, 6)
     assert r.check_trapped() is True
 
 
