@@ -406,7 +406,9 @@ class GameBoard:
 
             trapped = c.check_trapped()
 
-            if trapped:
+            # Trapped raccoons that are inside a can don't count toward the
+            # player's score: https://piazza.com/class/ky50y49v8002n5?cid=1019
+            if trapped and (not c.inside_can):
                 trapped_raccoons += 1
             elif not (trapped or c.inside_can):
                 self.ended = False
@@ -451,7 +453,7 @@ class GameBoard:
         >>> b.adjacent_bin_score()
         5
         """
-        high_score = 1
+        high_score = 0
 
         def adjacents(bin: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
             score = 1
@@ -769,7 +771,10 @@ class Raccoon(TurnTaker):
 
         >>> r = Raccoon(GameBoard(5, 5), 5, 10)
         """
-        self.inside_can = False
+        if b.contains_at((x, y), "O"):
+            self.inside_can = True
+        else:
+            self.inside_can = False
         # since this raccoon may be placed inside an open garbage can,
         # we need to initially set the inside_can attribute
         # BEFORE calling the parent init, which is where the raccoon is actually
