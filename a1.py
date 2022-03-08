@@ -230,6 +230,7 @@ class GameBoard:
         for c in self._characters:
             # TODO: What happens here if a recycling bin is after a binned
             # raccoon in `self._characters`? LK
+            # Idk what you mean or the problem but everything seems fine -JL
             grid[c.y][c.x] = c.get_char()
 
         return grid

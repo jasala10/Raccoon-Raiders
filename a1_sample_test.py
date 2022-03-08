@@ -181,6 +181,94 @@ def test_simple_give_turns() -> None:
 # ====== CUSTOM TESTS =========
 
 
+def test_place_character_00() -> None:
+    """Basic functionality"""
+    b = GameBoard(10, 10)
+    c1 = Player(b, 3, 3)
+    c2 = Raccoon(b, 3, 4)
+    c3 = GarbageCan(b, 3, 5, True)
+    c4 = GarbageCan(b, 3, 6, False)
+    c5 = SmartRaccoon(b, 3, 6)
+    assert b.at(3, 3)[0] == c1
+    assert b.at(3, 4)[0] == c2
+    assert b.at(3, 5)[0] == c3
+    assert b.at(3, 6)[0] == c4
+    assert b.at(3, 6)[1] == c5
+    assert len(b.at(3, 3)) == 1
+    assert len(b.at(3, 5)) == 1
+    assert len(b.at(3, 6)) == 2
+
+
+def test_at_00() -> None:
+    """1 character
+    """
+    b = GameBoard(10, 10)
+    p = Player(b, 5, 5)
+    assert b.at(5, 5)[0] == p
+    assert len(b.at(5, 5)) == 1
+
+
+def test_at_01() -> None:
+    """2 characters r / gc
+    """
+    b = GameBoard(2, 2)
+    g = GarbageCan(b, 0, 1, False)
+    r = Raccoon(b, 0, 1)
+    assert b.at(0, 1)[0] == g
+    assert b.at(0, 1)[1] == r
+    assert len(b.at(0, 1)) == 2
+
+
+def test_at_02() -> None:
+    """ sr / gc and off-board cases
+    """
+    b = GameBoard(2, 2)
+    g = GarbageCan(b, 0, 1, False)
+    r = SmartRaccoon(b, 0, 1)
+    assert b.at(0, 1)[0] == g
+    assert b.at(0, 1)[1] == r
+    assert len(b.at(0, 1)) == 2
+    assert b.at(2, 2) == []
+    assert b.at(-1, -1) == []
+
+
+def test_to_grid_00() -> None:
+    """Basic Functionality and placing Raccoon in GC"""
+    b = GameBoard(3, 3)
+    _ = Player(b, 0, 0)
+    _ = RecyclingBin(b, 0, 1)
+    _ = SmartRaccoon(b, 0, 2)
+    _ = GarbageCan(b, 1, 0, True)
+    _ = GarbageCan(b, 1, 1, False)
+    _ = RecyclingBin(b, 1, 2)
+    _ = GarbageCan(b, 2, 0, False)
+    _ = Raccoon(b, 2, 0)
+    _ = RecyclingBin(b, 2, 1)
+    _ = SmartRaccoon(b, 2, 2)
+    # sry initialized this annoyingly it's going L→R one column at a time
+
+    assert b.to_grid() == [['P', 'C', '@'], ['B', 'O', 'B'], ['S', 'B', 'S']]
+    _ = Raccoon(b, 1, 1)
+    assert b.to_grid() == [['P', 'C', '@'], ['B', '@', 'B'], ['S', 'B', 'S']]
+
+
+def test_str_00() -> None:
+    b = GameBoard(3, 3)
+    _ = Player(b, 0, 0)
+    _ = RecyclingBin(b, 0, 1)
+    _ = SmartRaccoon(b, 0, 2)
+    _ = GarbageCan(b, 1, 0, True)
+    _ = GarbageCan(b, 1, 1, False)
+    _ = RecyclingBin(b, 1, 2)
+    _ = GarbageCan(b, 2, 0, False)
+    _ = Raccoon(b, 2, 0)
+    _ = RecyclingBin(b, 2, 1)
+    _ = SmartRaccoon(b, 2, 2)
+    assert b.__str__() == 'PC@\nBOB\nSBS'
+    _ = SmartRaccoon(b, 1, 1)
+    assert b.__str__() == 'PC@\nB@B\nSBS'
+
+
 def test_check_trapped_00() -> None:
     b = GameBoard(1, 1)
     r = Raccoon(b, 0, 0)
