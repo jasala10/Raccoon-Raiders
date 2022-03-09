@@ -351,8 +351,8 @@ def test_move_05() -> None:
     r = RecyclingBin(b, 1, 1)
     p.move(DOWN)
     assert p.move(RIGHT) is True
-    # assert p.move(RIGHT) is True
-    # assert p.move(RIGHT) is False
+    assert p.move(RIGHT) is True
+    assert p.move(RIGHT) is False
 
 
 def test_move_06() -> None:
@@ -380,6 +380,31 @@ def test_move_07() -> None:
     assert p.move(DOWN) is False
     assert p.move(RIGHT) is True
     assert p.move(RIGHT) is False
+
+
+def test_recycle_move_00() -> None:
+    b = GameBoard(3, 3)
+    rb1 = RecyclingBin(b, 0, 0)
+    _ = RecyclingBin(b, 1, 0)
+    assert rb1.move(LEFT) is False
+    assert rb1.move(RIGHT) is True
+    rb1.move(LEFT)
+    assert rb1.move(DOWN) is True
+    assert rb1.move(DOWN) is True
+    assert rb1.move(DOWN) is False
+
+
+def test_recycle_move_01() -> None:
+    b = GameBoard(7, 7)
+    rb1 = RecyclingBin(b, 1, 0)
+    rb2 = RecyclingBin(b, 3, 0)
+    rb3 = RecyclingBin(b, 5, 0)
+    assert rb1.move(RIGHT) is True
+    assert rb1.move(RIGHT) is True
+    assert b.at(4, 0)[0] == rb2
+    assert rb1.move(RIGHT) is True
+    assert rb1.move(RIGHT) is False
+    assert b.at(6, 0)[0] == rb3
 
 # === OTHER METHODS ===
 

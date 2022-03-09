@@ -24,6 +24,13 @@ from random import shuffle
 from typing import List, Tuple, Optional
 from typing import Dict, Iterable, Any  # my custom imports
 
+# TODO (before Friday)
+# --- Finish Test Suite (Task 1, 2 done)
+# --- Debug if/when necessary
+# --- Add docstrings to all helper methods
+# --- Could you double-check GameBoard.give_turns? Idrk how to test it properly
+
+
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
 # character type defined. Here I'm using a typealias to fix errors in my editor,
@@ -75,6 +82,7 @@ def get_shuffled_directions() -> List[Tuple[int, int]]:
 
 
 def shift(old: Tuple[int, int], by: Tuple[int, int]) -> Tuple[int, int]:
+    # TODO: write a complete docstring for this function (Required)
     return (old[0] + by[0], old[1] + by[1])
 
 
@@ -196,6 +204,7 @@ class GameBoard:
         return result
 
     def contains_at(self, pos: Tuple[int, int], query: Iterable[Any]) -> bool:
+        # TODO: Add a complete docstring for this function (Required)
         characters = self.at(pos[0], pos[1])
 
         chars = [c.get_char() for c in characters]
@@ -456,6 +465,7 @@ class GameBoard:
         high_score = 0
 
         def adjacents(bin: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
+            # TODO: Write a complete docstring for this method (Required)
             score = 1
 
             for d in DIRECTIONS:
