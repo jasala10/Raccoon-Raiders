@@ -362,9 +362,8 @@ def test_move_06() -> None:
     _ = RecyclingBin(b, 2, 1)
     _ = RecyclingBin(b, 3, 1)
     p.move(DOWN)
-    assert p.move(LEFT) is False  # border (PASSES)
-    assert p.move(RIGHT) is False   # recycling bins (FAILS)
-    # not sure what's going wrong here
+    assert p.move(LEFT) is False
+    assert p.move(RIGHT) is False
 
 
 def test_move_07() -> None:

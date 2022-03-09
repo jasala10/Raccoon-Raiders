@@ -726,14 +726,10 @@ class Player(TurnTaker):
             bin_moved = item.move(direction)
             if bin_moved:
                 self._move_to(new_spot)
-            return True
+                return True
 
         # Garbage can
         elif isinstance(item, GarbageCan):
-            # keeping old solution here because I may be wrong abt this:
-            # item.locked = True
-            # return True
-
             # we must verify that Garbage Can is unlocked.
             if item.locked is False:
                 item.locked = True
