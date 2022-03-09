@@ -180,6 +180,10 @@ def test_simple_give_turns() -> None:
 
 # ====== CUSTOM TESTS =========
 
+# =============================
+# =====  Task 1 Methods   =====
+# =============================
+
 
 def test_place_character_00() -> None:
     """Basic functionality"""
@@ -267,6 +271,118 @@ def test_str_00() -> None:
     assert b.__str__() == 'PC@\nBOB\nSBS'
     _ = SmartRaccoon(b, 1, 1)
     assert b.__str__() == 'PC@\nB@B\nSBS'
+
+# ======================
+# === TASK 2 METHODS ===
+# ======================
+
+
+def test_move_00() -> None:
+    b = GameBoard(2, 2)
+    p = Player(b, 0, 0)
+    p.move(RIGHT)
+    assert b.at(1, 0) == [p]
+
+
+def test_move_01() -> None:
+    b = GameBoard(10, 10)
+    p = Player(b, 5, 5)
+    p.move(RIGHT)
+    p.move(UP)
+    p.move(LEFT)
+    p.move(DOWN)
+    assert b.at(5, 5) == [p]
+    for i in range(5):
+        p.move(UP)
+        p.move(LEFT)
+    assert b.at(0, 0) == [p]
+    assert p.move(LEFT) is False
+    assert p.move(UP) is False
+    assert p.move(DOWN) is True
+    assert p.move(RIGHT) is True
+
+
+def test_move_02() -> None:
+    b = GameBoard(3, 3)
+    r = Raccoon(b, 1, 1)
+    p = Player(b, 0, 0)
+    p.move(DOWN)
+    assert p.move(RIGHT) is False
+    assert b.at(0, 1) == [p]
+    k = SmartRaccoon(b, 0, 2)
+    assert p.move(DOWN) is False
+
+
+def test_move_03() -> None:
+    b = GameBoard(3, 3)
+    p = Player(b, 0, 0)
+    g = GarbageCan(b, 1, 0, False)
+    assert p.move(DOWN) is True
+    assert p.move(UP) is True
+    assert p.move(RIGHT) is True
+    assert b.at(0, 0)[0] == p
+
+
+def test_move_03_point_5() -> None:
+    b = GameBoard(3, 3)
+    p = Player(b, 0, 0)
+    g = GarbageCan(b, 1, 1, True)
+    assert p.move(DOWN) is True
+    assert p.move(RIGHT) is False
+    # Should return False when attempting to move towards locked G.Can
+    # This failed with the previous implementation.
+
+
+def test_move_04() -> None:
+    b = GameBoard(2, 2)
+    p = Player(b, 0, 0)
+    assert p.move(UP) is False
+    assert p.move(DOWN) is True
+    p.move(DOWN)
+    assert p.move(DOWN) is False
+    assert p.move(RIGHT) is True
+    p.move(RIGHT)
+    assert p.move(UP) is True
+
+
+def test_move_05() -> None:
+    b = GameBoard(4, 4)
+    p = Player(b, 0, 0)
+    r = RecyclingBin(b, 1, 1)
+    p.move(DOWN)
+    assert p.move(RIGHT) is True
+    # assert p.move(RIGHT) is True
+    # assert p.move(RIGHT) is False
+
+
+def test_move_06() -> None:
+    b = GameBoard(4, 4)
+    p = Player(b, 0, 0)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 2, 1)
+    _ = RecyclingBin(b, 3, 1)
+    p.move(DOWN)
+    assert p.move(LEFT) is False  # border (PASSES)
+    assert p.move(RIGHT) is False   # recycling bins (FAILS)
+    # not sure what's going wrong here
+
+
+def test_move_07() -> None:
+    b = GameBoard(4, 4)
+    p = Player(b, 1, 1)
+    _ = GarbageCan(b, 0, 1, False)
+    _ = GarbageCan(b, 1, 0, False)
+    _ = GarbageCan(b, 1, 2, True)
+    _ = GarbageCan(b, 2, 1, False)
+    assert p.move(UP) is True
+    assert p.move(UP) is False
+    assert p.move(LEFT) is True
+    assert p.move(LEFT) is False
+    assert p.move(DOWN) is False
+    assert p.move(RIGHT) is True
+    assert p.move(RIGHT) is False
+
+# === OTHER METHODS ===
 
 
 def test_check_trapped_00() -> None:

@@ -356,7 +356,6 @@ class GameBoard:
             self.turns += 1  # PROVIDED, DO NOT CHANGE
 
         if self.turns % RACCOON_TURN_FREQUENCY == 0:  # PROVIDED, DO NOT CHANGE
-            #  bug occurs about 1/5 of the time and idk why
             for character in self._characters:
                 if isinstance(character, Raccoon):
                     character.take_turn()
@@ -731,8 +730,14 @@ class Player(TurnTaker):
 
         # Garbage can
         elif isinstance(item, GarbageCan):
-            item.locked = True
-            return True
+            # keeping old solution here because I may be wrong abt this:
+            # item.locked = True
+            # return True
+
+            # we must verify that Garbage Can is unlocked.
+            if item.locked is False:
+                item.locked = True
+                return True
 
         # All other entities block movement
         return False
