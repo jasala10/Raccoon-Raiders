@@ -454,33 +454,6 @@ def test_check_trapped_05() -> None:
     _ = GarbageCan(b, 5, 6, False)
     assert r.check_trapped()
 
-
-def test_adjacent_bin_score_with_trapped_raccooon() -> None:
-    b = GameBoard(2, 2)
-    _ = GarbageCan(b, 0, 0, False)
-    r = Raccoon(b, 0, 0)
-
-    # The raccoon was placed on a garbage can, it should reflect that
-    assert r.inside_can == True
-    assert b.adjacent_bin_score() == 0
-
-    # The raccoon is in a bin, and there are no adjacent recycling bins
-    assert b.check_game_end() == 0
-
-    # We introduce two recycling bins, but they aren't adjacent
-    _ = RecyclingBin(b, 0, 1)
-    _ = RecyclingBin(b, 1, 0)
-
-    assert b.adjacent_bin_score() == 1
-    assert b.check_game_end() == 1
-
-    # This is a connecting recycling bin, so the adjacent bin score is 3
-    _ = RecyclingBin(b, 1, 1)
-
-    assert b.adjacent_bin_score() == 3
-    assert b.check_game_end() == 3
-
-
 if __name__ == '__main__':
     import pytest
 

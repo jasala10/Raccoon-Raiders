@@ -27,9 +27,6 @@ from typing import Dict, Iterable, Any  # my custom imports
 # TODO (before Friday)
 # --- Finish Test Suite (Task 1, 2 done)
 # --- Debug if/when necessary
-# --- Add docstrings to all helper methods
-# --- Could you double-check GameBoard.give_turns? Idrk how to test it properly
-
 
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
@@ -82,7 +79,9 @@ def get_shuffled_directions() -> List[Tuple[int, int]]:
 
 
 def shift(old: Tuple[int, int], by: Tuple[int, int]) -> Tuple[int, int]:
-    # TODO: write a complete docstring for this function (Required)
+    """
+    Shifts a given tuple by the offset
+    """
     return (old[0] + by[0], old[1] + by[1])
 
 
@@ -171,6 +170,9 @@ class GameBoard:
         >>> b.at(1, 1)[0] == r  # requires GameBoard.at be implemented to work
         True
         """
+        if not self.on_board(c.x, c.y):
+           return
+
         self._characters.append(c)
 
         if isinstance(c, Player):
@@ -204,7 +206,10 @@ class GameBoard:
         return result
 
     def contains_at(self, pos: Tuple[int, int], query: Iterable[Any]) -> bool:
-        # TODO: Add a complete docstring for this function (Required)
+        """
+        Returns true if a given position on the board contains any character in
+        the query
+        """
         characters = self.at(pos[0], pos[1])
 
         chars = [c.get_char() for c in characters]
@@ -232,14 +237,18 @@ class GameBoard:
         >>> _ = GarbageCan(b, 2, 1, True)
         >>> b.to_grid()
         [['P', '-', '-'], ['-', 'R', 'C']]
+        >>> b2 = GameBoard(1, 1)
+        >>> b2.to_grid()
+        [['-']]
+        >>> _ = Raccoon(b2, 0, 0)
+        >>> _ = GarbageCan(b2, 0, 0, True)
+        >>> b2.to_grid()
+        [['@']]
         """
         row = ["-" for _ in range(self.width)]
         grid = [row.copy() for _ in range(self.height)]
 
         for c in self._characters:
-            # TODO: What happens here if a recycling bin is after a binned
-            # raccoon in `self._characters`? LK
-            # Idk what you mean or the problem but everything seems fine -JL
             grid[c.y][c.x] = c.get_char()
 
         return grid
@@ -368,7 +377,6 @@ class GameBoard:
             for character in self._characters:
                 if isinstance(character, Raccoon):
                     character.take_turn()
-                    self.turns += 1
 
         self.check_game_end()  # PROVIDED, DO NOT CHANGE
 
@@ -465,10 +473,16 @@ class GameBoard:
         high_score = 0
 
         def adjacents(bin: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
-            # TODO: Write a complete docstring for this method (Required)
+            """
+            Returns adjacent bins, not counting bins in `ignoring`
+            """
             score = 1
+            other = None
 
             for d in DIRECTIONS:
+                if not self.on_board(bin.x + d[0], bin.y + d[1]):
+                    continue
+
                 items = self.at(bin.x + d[0], bin.y + d[1])
 
                 if len(items) < 1:
@@ -478,9 +492,13 @@ class GameBoard:
 
                 if isinstance(item, RecyclingBin) and item not in ignoring:
                     ignoring.append(bin)
-                    score += adjacents(item, ignoring)
+                    other = item
+                    break
 
-            return score
+            if other is not None:
+                return score + adjacents(other, ignoring)
+            else:
+                return score
 
         for c in self._characters:
             if not isinstance(c, RecyclingBin):
@@ -820,7 +838,7 @@ class Raccoon(TurnTaker):
         >>> r.check_trapped()
         True
         """
-        characters = ['B', 'R', '@', 'P']
+        characters = ["B", "R", "@", "P"]
 
         # check left
         i = None
@@ -831,7 +849,7 @@ class Raccoon(TurnTaker):
         is_left_trapped = self.x == 0 or i in characters
 
         # check right:
-        r_border_trapped = self.x == self.board.width-1
+        r_border_trapped = self.x == self.board.width - 1
         j = None
         if not r_border_trapped:
             right = self.board.at(self.x + 1, self.y)
@@ -848,7 +866,7 @@ class Raccoon(TurnTaker):
         is_up_trapped = self.y == 0 or k in characters
 
         # check down
-        d_border_trapped = (self.y == self.board.height - 1)
+        d_border_trapped = self.y == self.board.height - 1
         m = None
         if not d_border_trapped:
             down = self.board.at(self.x, self.y + 1)
@@ -949,8 +967,7 @@ class Raccoon(TurnTaker):
         >>> r2.x, r2.y
         (2, 1)
         """
-        choices = DIRECTIONS.copy()
-        shuffle(choices)
+        choices = get_shuffled_directions()
 
         while len(choices) > 0 and self.move(choices.pop()) == False:
             continue
@@ -1121,7 +1138,7 @@ if __name__ == "__main__":
     # For running a doctest on a single method
     # doctest.run_docstring_examples(SmartRaccoon.take_turn, globals())
 
-    import python_ta # type: ignore
+    import python_ta  # type: ignore
 
     python_ta.check_all(
         config={
