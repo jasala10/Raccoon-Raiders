@@ -294,7 +294,7 @@ def populate_board(
 
 
 if __name__ == "__main__":
-    random_game = False  # set to True to play on a random board
+    random_game = True  # set to True to play on a random board
     if random_game:
         rc = RaccoonRaiders(BOARD_WIDTH, BOARD_HEIGHT)
         # for random board, you can adjust settings at top of this file

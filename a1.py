@@ -27,6 +27,8 @@ from typing import Dict, Iterable, Any  # my custom imports
 # TODO (before Friday)
 # --- Finish Test Suite (Task 1, 2 done)
 # --- Debug if/when necessary
+# --- Read through piazza posts and implement tests based on edge cases
+# --- Make PyTA happy
 
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
@@ -171,7 +173,7 @@ class GameBoard:
         True
         """
         if not self.on_board(c.x, c.y):
-           return
+            return
 
         self._characters.append(c)
 
@@ -415,24 +417,43 @@ class GameBoard:
         >>> b.ended
         True
         """
+        # I rewrote this to better understand it, but this implementation causes
+        # that to_grid doctest to fail. I think this may have something
+        # to do with the issue of SmartRaccoons in GarbageCans appearing as
+        # just unlocked GarbageCans
+
         trapped_raccoons = 0
-
         for c in self._characters:
-            if not isinstance(c, Raccoon):
-                continue
-
-            trapped = c.check_trapped()
-
-            # Trapped raccoons that are inside a can don't count toward the
-            # player's score: https://piazza.com/class/ky50y49v8002n5?cid=1019
-            if trapped and (not c.inside_can):
-                trapped_raccoons += 1
-            elif not (trapped or c.inside_can):
-                self.ended = False
-                return None
-
+            if isinstance(c, Raccoon):
+                if c.check_trapped():
+                    trapped_raccoons += 1
+                elif not (c.inside_can or c.check_trapped()):
+                    self.ended = False
+                    return None
         self.ended = True
         return (trapped_raccoons * 10) + self.adjacent_bin_score()
+
+        # Old (possibly better) implementation)
+        # trapped_raccoons = 0
+        #
+        # for c in self._characters:
+        #     if not isinstance(c, Raccoon):
+        #         continue
+        #
+        #     trapped = c.check_trapped()
+        #
+        #     # Trapped raccoons that are inside a can don't count toward the
+        #     # player's score: https://piazza.com/class/ky50y49v8002n5?cid=1019
+        #     if trapped and (not c.inside_can):
+        #         trapped_raccoons += 1
+        #     elif not (trapped or c.inside_can):
+        #         self.ended = False
+        #         return None
+        #
+        # self.ended = True
+        # return (trapped_raccoons * 10) + self.adjacent_bin_score()
+
+
 
     def adjacent_bin_score(self) -> int:
         """
@@ -921,7 +942,7 @@ class Raccoon(TurnTaker):
         >>> len(b.at(1, 1)) == 2  # Raccoon and GarbageCan are both at (1, 1)!
         True
         """
-        blockers = ["P", "@", "R", "B"]
+        blockers = ["P", "@", "R", "B", "S"]
 
         pos = shift((self.x, self.y), direction)
         (x, y) = pos
@@ -969,7 +990,7 @@ class Raccoon(TurnTaker):
         """
         choices = get_shuffled_directions()
 
-        while len(choices) > 0 and self.move(choices.pop()) == False:
+        while len(choices) > 0 and self.move(choices.pop()) is False:
             continue
 
     def get_char(self) -> chr:

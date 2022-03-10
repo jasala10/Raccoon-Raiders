@@ -1,6 +1,7 @@
 from a1 import *
 
-def test_adjacent_bin_score_with_trapped_raccooon() -> None:
+
+def test_adjacent_bin_score_with_trapped_raccoon() -> None:
     b = GameBoard(2, 2)
     _ = GarbageCan(b, 0, 0, False)
     r = Raccoon(b, 0, 0)
@@ -57,6 +58,7 @@ def test_adjacent_bin_score_multiple_groups() -> None:
     b.setup_from_grid("BB---\nBB--B\n---BB\n--BB")
 
     assert b.adjacent_bin_score() == 5
+
 
 def test_smart_raccoon_movement() -> None:
     b = GameBoard(5, 1)

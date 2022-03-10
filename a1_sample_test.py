@@ -409,6 +409,46 @@ def test_recycle_move_01() -> None:
 # === OTHER METHODS ===
 
 
+def test_take_turn_00() -> None:
+    b = GameBoard(3, 3)
+    _ = RecyclingBin(b, 0, 1)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 2, 1)
+    r = Raccoon(b, 1, 2)
+    r.take_turn()
+    assert len(b.at(0, 2)) > 0 or len(b.at(2, 2)) > 0
+
+
+def test_take_turn_01() -> None:
+    b = GameBoard(3, 3)
+    _ = RecyclingBin(b, 0, 1)
+    _ = RecyclingBin(b, 2, 1)
+    _ = Raccoon(b, 0, 2)
+    r = Raccoon(b, 1, 2)
+    _ = Raccoon(b, 2, 2)
+    r.take_turn()
+    assert b.at(1, 1)[0] == r
+
+
+def test_take_turn_02() -> None:
+    b = GameBoard(3, 3)
+    _ = GarbageCan(b, 1, 1, False)
+    r = Raccoon(b, 1, 1)
+    for i in range(10):
+        r.take_turn()
+    assert b.at(1, 1)[1] == r
+
+
+def test_take_turn_03() -> None:
+    b = GameBoard(3, 3)
+    _ = RecyclingBin(b, 0, 1)
+    _ = RecyclingBin(b, 1, 1)
+    r = Raccoon(b, 0, 2)
+    r.take_turn()
+    # assert b.at(1, 2)[0] == r
+    assert (r.x, r.y) == (1, 2)
+
+
 def test_check_trapped_00() -> None:
     b = GameBoard(1, 1)
     r = Raccoon(b, 0, 0)
@@ -452,7 +492,176 @@ def test_check_trapped_05() -> None:
     _ = RecyclingBin(b, 6, 5)
     _ = RecyclingBin(b, 5, 4)
     _ = GarbageCan(b, 5, 6, False)
-    assert r.check_trapped()
+    assert not r.check_trapped()  # because raccoon can move into unlocked can
+
+
+def test_check_trapped_06() -> None:
+    b = GameBoard(9, 9)
+    r = Raccoon(b, 5, 5)
+    _ = GarbageCan(b, 4, 5, True)
+    _ = GarbageCan(b, 6, 5, True)
+    _ = GarbageCan(b, 5, 4, True)
+    _ = GarbageCan(b, 5, 6, True)
+    assert not r.check_trapped()  # raccoon can use its turn to unlock can
+
+
+def test_check_trapped_07() -> None:
+    b = GameBoard(9, 9)
+    r = Raccoon(b, 5, 5)
+    _ = GarbageCan(b, 4, 5, True)
+    _ = GarbageCan(b, 6, 5, True)
+    _ = GarbageCan(b, 5, 4, False)
+    _ = GarbageCan(b, 5, 6, True)
+    assert not r.check_trapped()  # raccoon can move into can
+
+
+def test_adjacent_bin_score_00() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 0, 0)
+    _ = RecyclingBin(b, 0, 1)
+    _ = RecyclingBin(b, 0, 4)
+    _ = RecyclingBin(b, 1, 0)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 2)
+    _ = RecyclingBin(b, 1, 3)
+    _ = RecyclingBin(b, 1, 4)
+    _ = RecyclingBin(b, 2, 1)
+    _ = RecyclingBin(b, 2, 4)
+    _ = RecyclingBin(b, 4, 0)
+    _ = RecyclingBin(b, 4, 1)
+    _ = RecyclingBin(b, 4, 2)
+    assert b.adjacent_bin_score() == 10
+
+    #     B B - - B
+    #     B B B - B
+    #     - B - - B
+    #     - B - - -
+    #     B B B - -  (10)
+
+
+def test_adjacent_bin_score_01() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 0, 0)
+    _ = RecyclingBin(b, 0, 3)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 4)
+    _ = RecyclingBin(b, 2, 0)
+    _ = RecyclingBin(b, 2, 2)
+    _ = RecyclingBin(b, 2, 3)
+    _ = RecyclingBin(b, 3, 1)
+    _ = RecyclingBin(b, 3, 4)
+    _ = RecyclingBin(b, 4, 0)
+    _ = RecyclingBin(b, 4, 2)
+    _ = RecyclingBin(b, 4, 3)
+    assert b.adjacent_bin_score() == 2
+
+    #     B - B - B
+    #     - B - - -
+    #     - - B - B
+    #     B - B - B
+    #     - B - B - (2)
+
+
+def test_adjacent_bin_score_02() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 0, 0)
+    _ = RecyclingBin(b, 0, 1)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 2)
+    _ = RecyclingBin(b, 1, 3)
+    _ = RecyclingBin(b, 1, 4)
+    _ = RecyclingBin(b, 2, 3)
+    _ = RecyclingBin(b, 3, 1)
+    _ = RecyclingBin(b, 3, 2)
+    _ = RecyclingBin(b, 3, 3)
+    _ = RecyclingBin(b, 4, 1)
+    assert b.adjacent_bin_score() == 11
+
+    #     B - - - -
+    #     B B - B B
+    #     - B - B -
+    #     - B B B -
+    #     - B - - -   (11)
+
+
+def test_adjacent_bin_score_03() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 0, 0)
+    _ = RecyclingBin(b, 0, 4)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 2, 1)
+    _ = RecyclingBin(b, 2, 2)
+    _ = RecyclingBin(b, 2, 4)
+    _ = RecyclingBin(b, 3, 1)
+    _ = RecyclingBin(b, 4, 0)
+    _ = RecyclingBin(b, 4, 4)
+    assert b.adjacent_bin_score() == 4
+
+    #     B - - - B
+    #     - B B B -
+    #     - - B - -
+    #     - - - - -
+    #     B - B - B  (4)
+
+
+def test_adjacent_bin_score_04() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 1, 0)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 2)
+    _ = RecyclingBin(b, 1, 3)
+    _ = RecyclingBin(b, 1, 4)
+    assert b.adjacent_bin_score() == 5
+
+    #     - B - - -
+    #     - B - - -
+    #     - B - - -
+    #     - B - - -
+    #     - B - - -  (5)
+
+
+def test_adjacent_bin_score_05() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 1, 0)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 2)
+    _ = RecyclingBin(b, 1, 3)
+    _ = RecyclingBin(b, 1, 4)
+    _ = RecyclingBin(b, 3, 0)
+    _ = RecyclingBin(b, 3, 1)
+    _ = RecyclingBin(b, 3, 2)
+    _ = RecyclingBin(b, 3, 3)
+    _ = RecyclingBin(b, 3, 4)
+    assert b.adjacent_bin_score() == 5
+
+    #     - B - B -
+    #     - B - B -
+    #     - B - B -
+    #     - B - B -
+    #     - B - B - (5)
+
+
+def test_adjacent_bin_score_06() -> None:
+    b = GameBoard(5, 5)
+    _ = RecyclingBin(b, 1, 0)
+    _ = RecyclingBin(b, 1, 1)
+    _ = RecyclingBin(b, 1, 2)
+    _ = RecyclingBin(b, 1, 3)
+    _ = RecyclingBin(b, 1, 4)
+    _ = RecyclingBin(b, 2, 2)
+    _ = RecyclingBin(b, 3, 0)
+    _ = RecyclingBin(b, 3, 1)
+    _ = RecyclingBin(b, 3, 2)
+    _ = RecyclingBin(b, 3, 3)
+    _ = RecyclingBin(b, 3, 4)
+    assert b.adjacent_bin_score() == 11
+
+    #     - B - B -
+    #     - B - B -
+    #     - B B B -
+    #     - B - B -
+    #     - B - B - (11)
+
 
 if __name__ == '__main__':
     import pytest
