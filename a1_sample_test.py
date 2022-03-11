@@ -663,6 +663,21 @@ def test_adjacent_bin_score_06() -> None:
     #     - B - B - (11)
 
 
+# TESTS DEMONSTRATING THE MAIN ISSUE
+
+
+def test_issue_00() -> None:
+    b = GameBoard(4, 4)
+    _ = GarbageCan(b, 0, 0, False)
+    s = SmartRaccoon(b, 2, 0)
+    s.take_turn()
+    assert b.at(1, 0)[0] == s
+    s.take_turn()
+    assert len(b.at(0, 0)) == 2
+    # When you force a SmartRaccoon to take a turn, it knows that to do,
+    # but there seems to be an issue with what they do when they are given
+    # turns.
+
 if __name__ == '__main__':
     import pytest
 

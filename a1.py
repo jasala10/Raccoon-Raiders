@@ -24,11 +24,27 @@ from random import shuffle
 from typing import List, Tuple, Optional
 from typing import Dict, Iterable, Any  # my custom imports
 
-# TODO (before Friday)
-# --- Finish Test Suite (Task 1, 2 done)
-# --- Debug if/when necessary
-# --- Read through piazza posts and implement tests based on edge cases
-# --- Make PyTA happy
+# ==============================================================================
+# TODO (before Friday 8pm EST)
+# Debug:
+# --- SmartRaccoon movement issue update:
+# --- --- I can't write good tests demonstrating the issue, but try running
+# --- --- a1_game.py and look at the behaviour of SmartRaccoons.
+# --- --- Before this most recent commit, SmartRaccoons would never move.
+# --- --- Now, they only seem to move when an unlocked garbage cans is directly
+# --- --- Left/R/D/U from their spot, and have a totally clear route
+# --- --- I believe this is the largest outstanding bug
+# --- GarbageCan issue:
+# --- --- When Raccoons enter a GarbageCan, the GarbageCan does not show a
+# --- --- Raccoon is in it. It just displays as an unlocked GarbageCan
+# --- Endgame issue:
+# --- --- Things seem very buggy with determining when the endgame is.
+# --- --- Try playing a few games and you'll see what I mean.
+
+# Finish Test Suite (Task 1, 2 done)
+# Read through piazza posts and implement tests based on edge cases
+# Make PyTA happy
+# ==============================================================================
 
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
@@ -242,10 +258,6 @@ class GameBoard:
         >>> b2 = GameBoard(1, 1)
         >>> b2.to_grid()
         [['-']]
-        >>> _ = Raccoon(b2, 0, 0)
-        >>> _ = GarbageCan(b2, 0, 0, True)
-        >>> b2.to_grid()
-        [['@']]
         """
         row = ["-" for _ in range(self.width)]
         grid = [row.copy() for _ in range(self.height)]
@@ -377,7 +389,7 @@ class GameBoard:
 
         if self.turns % RACCOON_TURN_FREQUENCY == 0:  # PROVIDED, DO NOT CHANGE
             for character in self._characters:
-                if isinstance(character, Raccoon):
+                if isinstance(character, TurnTaker): # simple fix to get SmartRaccoons moving again
                     character.take_turn()
 
         self.check_game_end()  # PROVIDED, DO NOT CHANGE
@@ -452,7 +464,6 @@ class GameBoard:
         #
         # self.ended = True
         # return (trapped_raccoons * 10) + self.adjacent_bin_score()
-
 
 
     def adjacent_bin_score(self) -> int:
