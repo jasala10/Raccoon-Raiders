@@ -22,29 +22,12 @@ from __future__ import annotations
 
 from random import shuffle
 from typing import List, Tuple, Optional
-from typing import Dict, Iterable, Any  # my custom imports
+from typing import Iterable, Any  # my custom imports
+
 
 # ==============================================================================
 # TODO (before Friday 8pm EST)
-# Debug:
-# --- SmartRaccoon movement issue update:
-# --- --- I can't write good tests demonstrating the issue, but try running
-# --- --- a1_game.py and look at the behaviour of SmartRaccoons.
-# --- --- Before this most recent commit, SmartRaccoons would never move.
-# --- --- Now, they only seem to move when an unlocked garbage cans is directly
-# --- --- Left/R/D/U from their spot, and have a totally clear route
-# --- --- I believe this is the largest outstanding bug
-# --- GarbageCan issue:
-# --- --- When Raccoons enter a GarbageCan, the GarbageCan does not show a
-# --- --- Raccoon is in it. It just displays as an unlocked GarbageCan
-# --- Endgame issue:
-# --- --- Things seem very buggy with determining when the endgame is.
-# --- --- Try playing a few games and you'll see what I mean.
-
-# Finish Test Suite (Task 1, 2 done)
-# Read through piazza posts and implement tests based on edge cases
-# Make PyTA happy
-# ==============================================================================
+# rewrite this later
 
 # For some reason, they're doing something really weird with types in this
 # assignment. `chr` in python is actually a function, python doesn't have a
@@ -52,7 +35,7 @@ from typing import Dict, Iterable, Any  # my custom imports
 # but for the actual submission this will probably mess up their tests. For some
 # reason, `chr` being a function doesn't cause any issues in PyCharm.
 # UPDATE: see https://piazza.com/class/ky50y49v8002n5?cid=1134
-chr = str
+# chr = str
 
 # Each raccoon moves every this many turns
 RACCOON_TURN_FREQUENCY = 20
@@ -227,6 +210,10 @@ class GameBoard:
         """
         Returns true if a given position on the board contains any character in
         the query
+        >>> b = GameBoard(10, 10)
+        >>> r = Raccoon(b, 2, 2)
+        >>> b.contains_at((2, 2), "R")
+        True
         """
         characters = self.at(pos[0], pos[1])
 
@@ -263,7 +250,10 @@ class GameBoard:
         grid = [row.copy() for _ in range(self.height)]
 
         for c in self._characters:
-            grid[c.y][c.x] = c.get_char()
+            if self.contains_at((c.x, c.y), "@"):
+                grid[c.y][c.x] = "@"
+            else:
+                grid[c.y][c.x] = c.get_char()
 
         return grid
 
@@ -389,7 +379,7 @@ class GameBoard:
 
         if self.turns % RACCOON_TURN_FREQUENCY == 0:  # PROVIDED, DO NOT CHANGE
             for character in self._characters:
-                if isinstance(character, TurnTaker): # simple fix to get SmartRaccoons moving again
+                if isinstance(character, Raccoon):
                     character.take_turn()
 
         self.check_game_end()  # PROVIDED, DO NOT CHANGE
@@ -429,11 +419,6 @@ class GameBoard:
         >>> b.ended
         True
         """
-        # I rewrote this to better understand it, but this implementation causes
-        # that to_grid doctest to fail. I think this may have something
-        # to do with the issue of SmartRaccoons in GarbageCans appearing as
-        # just unlocked GarbageCans
-
         trapped_raccoons = 0
         for c in self._characters:
             if isinstance(c, Raccoon):
@@ -444,27 +429,6 @@ class GameBoard:
                     return None
         self.ended = True
         return (trapped_raccoons * 10) + self.adjacent_bin_score()
-
-        # Old (possibly better) implementation)
-        # trapped_raccoons = 0
-        #
-        # for c in self._characters:
-        #     if not isinstance(c, Raccoon):
-        #         continue
-        #
-        #     trapped = c.check_trapped()
-        #
-        #     # Trapped raccoons that are inside a can don't count toward the
-        #     # player's score: https://piazza.com/class/ky50y49v8002n5?cid=1019
-        #     if trapped and (not c.inside_can):
-        #         trapped_raccoons += 1
-        #     elif not (trapped or c.inside_can):
-        #         self.ended = False
-        #         return None
-        #
-        # self.ended = True
-        # return (trapped_raccoons * 10) + self.adjacent_bin_score()
-
 
     def adjacent_bin_score(self) -> int:
         """
@@ -504,18 +468,15 @@ class GameBoard:
         """
         high_score = 0
 
-        def adjacents(bin: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
+        def adjacents(b: RecyclingBin, ignoring: List[RecyclingBin]) -> int:
             """
             Returns adjacent bins, not counting bins in `ignoring`
             """
             score = 1
-            other = None
+            others = []
 
             for d in DIRECTIONS:
-                if not self.on_board(bin.x + d[0], bin.y + d[1]):
-                    continue
-
-                items = self.at(bin.x + d[0], bin.y + d[1])
+                items = self.at(b.x + d[0], b.y + d[1])
 
                 if len(items) < 1:
                     continue
@@ -523,20 +484,22 @@ class GameBoard:
                 item = items[0]
 
                 if isinstance(item, RecyclingBin) and item not in ignoring:
-                    ignoring.append(bin)
-                    other = item
-                    break
+                    others.append(item)
 
-            if other is not None:
-                return score + adjacents(other, ignoring)
-            else:
-                return score
+            if len(others) > 0:
+                for i in others:
+                    if i not in ignoring:
+                        ignoring.append(i)
+                        score += adjacents(i, ignoring)
+
+            return score
 
         for c in self._characters:
             if not isinstance(c, RecyclingBin):
                 continue
 
-            score = adjacents(c, [c])
+            ignoring = [c]
+            score = adjacents(c, ignoring)
 
             if score > high_score:
                 high_score = score
@@ -581,9 +544,16 @@ class Character:
         self.x, self.y = x, y
         self.board.place_character(self)  # this associates self with the board!
 
-    def _move_to(self, position: Tuple[int, int]):
+    def _move_to(self, position: Tuple[int, int]) -> None:
         """
         Moves this character to the given position
+        >>> b = GameBoard(10, 10)
+        >>> r = Raccoon(b, 0, 0)
+        >>> r._move_to((1, 1))
+        >>> r.x
+        1
+        >>> r.y
+        1
         """
         self.x = position[0]
         self.y = position[1]
@@ -872,42 +842,16 @@ class Raccoon(TurnTaker):
         """
         characters = ["B", "R", "@", "P"]
 
-        # check left
-        i = None
-        if not self.x == 0:
-            left = self.board.at(self.x - 1, self.y)
-            if len(left) > 0:
-                i = left[0].get_char()
-        is_left_trapped = self.x == 0 or i in characters
+        for d in DIRECTIONS:
+            pos = shift((self.x, self.y), d)
 
-        # check right:
-        r_border_trapped = self.x == self.board.width - 1
-        j = None
-        if not r_border_trapped:
-            right = self.board.at(self.x + 1, self.y)
-            if len(right) > 0:
-                j = right[0].get_char()
-        is_right_trapped = r_border_trapped or j in characters
+            if not self.board.on_board(pos[0], pos[1]):
+                continue
 
-        # check up
-        k = None
-        if not self.y == 0:
-            up = self.board.at(self.x, self.y - 1)
-            if len(up) > 0:
-                k = up[0].get_char()
-        is_up_trapped = self.y == 0 or k in characters
+            if not self.board.contains_at(pos, characters):
+                return False
 
-        # check down
-        d_border_trapped = self.y == self.board.height - 1
-        m = None
-        if not d_border_trapped:
-            down = self.board.at(self.x, self.y + 1)
-            if len(down) > 0:
-                m = down[0].get_char()
-        is_down_trapped = d_border_trapped or m in characters
-
-        return is_left_trapped and is_right_trapped and is_up_trapped \
-            and is_down_trapped
+        return True
 
     def move(self, direction: Tuple[int, int]) -> bool:
         """Attempt to move this Raccoon in <direction> and return whether
@@ -1072,7 +1016,7 @@ class SmartRaccoon(Raccoon):
                 if self.board.contains_at(p, blockers):
                     break
 
-                if self.board.contains_at(p, "O"):
+                if self.board.contains_at(p, ["O", "C"]):
                     # This works because we know that one of either the
                     # horizontal or vertical differences in position is 0.
                     displacement = abs((p[0] - self.x) + (p[1] - self.y))
@@ -1082,7 +1026,7 @@ class SmartRaccoon(Raccoon):
                 p = shift(p, d)
 
         if len(choices) < 1:
-            return
+            return super().take_turn()
 
         # Sort to find the best direction choice. Because of the order in which
         # we added the choices, two choices with equal displacements will result
