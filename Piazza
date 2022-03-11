@@ -1,0 +1,7 @@
+Things discussed on piazza to ensure our code satisfies:
+
+- Raccoons will always move if they can (eqaul probability for all possible moves)
+- Raccoons are considered trapped while inside a GarbageCan
+- For calculating score, a Raccoon in a GarbageCan is NOT considered trapped
+- SmartRaccoons do not prioritize unlocked GarbageCans over locked GarbageCans
+- SmartRaccoons will not move if a player is in between it and a GarbageCan
