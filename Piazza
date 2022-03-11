@@ -5,3 +5,4 @@ Things discussed on piazza to ensure our code satisfies:
 - For calculating score, a Raccoon in a GarbageCan is NOT considered trapped
 - SmartRaccoons do not prioritize unlocked GarbageCans over locked GarbageCans
 - SmartRaccoons will not move if a player is in between it and a GarbageCan
+
