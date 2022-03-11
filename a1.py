@@ -840,7 +840,7 @@ class Raccoon(TurnTaker):
         >>> r.check_trapped()
         True
         """
-        characters = ["B", "R", "@", "P"]
+        characters = ["B", "R", "@", "P", "S"]
 
         for d in DIRECTIONS:
             pos = shift((self.x, self.y), d)
@@ -1006,7 +1006,7 @@ class SmartRaccoon(Raccoon):
         >>> s.x == 6
         True
         """
-        blockers = ["B", "@", "R", "C"]
+        blockers = ["B", "@", "R", "C", "S"]
         choices = []
 
         for d in DIRECTIONS:
