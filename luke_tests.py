@@ -76,9 +76,13 @@ def test_smart_raccoon_movement() -> None:
     # Should go to the right regardless of DIRECTIONS because its closer
     assert s.x == 5
 
+def test_adjacent_hang() -> None:
+    b = GameBoard(5, 5)
+    b.setup_from_grid("B----\nBB----\nB")
+
+    assert b.adjacent_bin_score() == 4
 
 if __name__ == "__main__":
     import pytest  # type: ignore
 
-    # test_adjacent_bin_score_loop()
     pytest.main(["luke_tests.py"])
