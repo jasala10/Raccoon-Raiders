@@ -1006,7 +1006,7 @@ class SmartRaccoon(Raccoon):
         >>> s.x == 6
         True
         """
-        blockers = ["B", "@", "R", "S"]
+        blockers = ["B", "@", "R", "S", "P"]
         choices = []
 
         for d in DIRECTIONS:
